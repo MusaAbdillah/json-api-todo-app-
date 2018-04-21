@@ -1,4 +1,4 @@
-module v1
+module V1
 	class TodosController < ApplicationController
 		before_action :set_todo, only: [:show, :update, :destroy]
 
