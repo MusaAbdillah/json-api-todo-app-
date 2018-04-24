@@ -2,9 +2,13 @@ require 'rails_helper'
 RSpec.describe "todos API", type: :request do 
 	# add todos owner 
 	let(:user){ create(:user) }
+	let(:another_user){ create(:user)}
 	# initialize data
 	let!(:todos) { create_list(:todo, 10, created_by: user.id )}
 	let(:todo_id) { todos.first.id }
+	# initialize data another user 
+	let!(:another_todos) { create_list(:todo, 10, created_by: another_user.id )}
+	let(:another_todo_id) { another_todos.first.id }
 	# authorize request 
 	let(:headers) { valid_headers }
 
@@ -36,6 +40,13 @@ RSpec.describe "todos API", type: :request do
 
 			it "returns status code 200" do
 				expect(response).to have_http_status(200) 
+			end
+		end
+
+		context "when the todo exist but not valid user" do 
+			let(:todo_id){ another_todo_id }
+			it "returns status code" do 
+				expect(response).to have_http_status(401)
 			end
 		end
 
@@ -87,7 +98,7 @@ RSpec.describe "todos API", type: :request do
 
 	# test for 'PUT /todos/:id'
 	describe "PUT /todos/:id" do
-		let(:valid_attributes) { {title: 'Shopping'}.to_json}
+		let(:valid_attributes) { {title: 'Shopping', created_by: user.id.to_s}.to_json}
 
 		context "when the record exist" do
 			before { put "/todos/#{todo_id}", params: valid_attributes, headers: headers}
@@ -99,16 +110,39 @@ RSpec.describe "todos API", type: :request do
 			it "returns status code 204" do 
 				expect(response).to have_http_status(204)
 			end 
-		end 
+		end
+
+		context "when the record exist but not valid user" do 
+			let(:todo_id) { another_todo_id }
+
+			before { put "/todos/#{todo_id}", params: valid_attributes, headers: headers}
+
+			it "returns status code 401" do
+				expect(response).to have_http_status(401) 
+			end
+
+		end
+
+
 	end
 
 	# test for DELETE '/todos/:id'
 	describe "DELETE /todos/:id" do
 		before { delete "/todos/#{todo_id}", params: {}, headers: headers}
 
-		it "returns status code 204" do
-			expect(response).to have_http_status(204) 
-		end 
+		context "when request valid and user also valid" do 
+			it "returns status code 204" do
+				expect(response).to have_http_status(204) 
+			end 
+		end
+
+		context "when request valid but user not valid" do 
+			let(:todo_id){ another_todo_id }
+			
+			it "returns status code 401" do 
+				expect(response).to have_http_status(401)
+			end
+		end
 	end
 
 end
