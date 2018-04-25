@@ -1,6 +1,6 @@
 class User < ApplicationRecord
 	# association 
-	has_many :todos, foreign_key: :created_by
+	has_many :todos, dependent: :destroy, foreign_key: :created_by
 	# validation 
 	validates_presence_of(:name)
 	validates_presence_of(:email)
