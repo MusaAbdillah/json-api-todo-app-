@@ -1,6 +1,7 @@
 module V1
 	class TodosController < ApplicationController
-		before_action :set_todo, :correct_user, only: [:show, :update, :destroy]
+		before_action :set_todo, only: [:show, :update, :destroy]
+		before_action :correct_todo, only: [:show, :update, :destroy]
 		# get /todos 
 		def index 
 			@todos = current_user.todos.paginate(page: params[:page], per_page: 20)
@@ -37,14 +38,6 @@ module V1
 
 			def todo_params 
 				params.permit(:title)
-			end
-
-			def correct_user 
-				if @todo.created_by.to_i != current_user.id 
-					head :unauthorized 
-				else
-					@todo
-				end
 			end
 
 	end
